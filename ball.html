@@ -69,7 +69,7 @@
                 };
                 //设置Ball继承Shape的属性
                 Ball.prototype=Object.create(Shape.prototype);
-                //设置Ball的构造函数为它本身，不然的话为Shape,因为Shape.prototype.constructor===Shape
+                //设置Ball的构造函数为它本身，防止在某些情况下出现错误，不然的话为Shape,因为Shape.prototype.constructor===Shape
                 Ball.prototype.constructor=Ball;
                 //定义球类的公共方法，画出球
                 Ball.prototype.draw=function(){
@@ -117,7 +117,7 @@
                 }
                 //设置EvilCircle继承Shape的属性
                 EvilCircle.prototype=Object.create(Shape.prototype);
-                ////设置EvilCircle的构造函数为它本身，不然的话为Shape,因为Shape.prototype.constructor===Shape
+                ////设置EvilCircle的构造函数为它本身，防止在某些情况下出现错误,不然的话为Shape,因为Shape.prototype.constructor===Shape
                 EvilCircle.prototype.constructor=EvilCircle;
                 //定义圆圈的公共方法，画出圆圈
                 EvilCircle.prototype.draw=function(){
