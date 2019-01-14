@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body,html{
+            padding: 0;
+            margin:0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        p{
+            position: absolute;
+            right: 100px;
+            top: 20px;
+            color: #fff;
+            font-size: 16px;
+            margin: 0;
+        }
+        h6{
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 20px;
+            font-weight: normal;
+            margin: 0;
+        }
+    </style>
+    <script>
+        window.onload=function(){
+                //获取canvas
+            let canvas=document.getElementById('canvas'),
+                //获取屏幕宽度
+                width=canvas.width=document.body.clientWidth,
+                //获取屏幕高度
+                height=canvas.height=document.body.clientHeight,
+                //使能在canvas上画图
+                ctx=canvas.getContext('2d'),
+                //获取span元素
+                Span=document.getElementsByTagName('span')[0],
+                //设置球的初始总个数
+                count=500;
+                //初始化球的剩余个数
+                Span.innerText=count;
+                //创建一个随机函数
+                function random(val){
+                    return Math.floor(Math.random()*val);
+                };
+                //创建一个总的构造函数
+                function Shape(x,y,vX,vY,exists){
+                    this.x=x;
+                    this.y=y;
+                    this.vX=vX;
+                    this.vY=vY;
+                    this.exists=exists;
+                }
+                //根据总的创建一个球类构造函数，继承总的构造函数中的定义的属性
+                function Ball(x,y,vX,vY,exists,size,color){
+                    Shape.call(this,x,y,vX,vY,exists);
+                    this.size=size;
+                    this.color=color;
+                };
+                //设置Ball继承Shape的属性
+                Ball.prototype=Object.create(Shape.prototype);
+                //设置Ball的构造函数为它本身，不然的话为Shape,因为Shape.prototype.constructor===Shape
+                Ball.prototype.constructor=Ball;
+                //定义球类的公共方法，画出球
+                Ball.prototype.draw=function(){
+                    ctx.beginPath();
+                    ctx.fillStyle=this.color;
+                    ctx.arc(this.x,this.y,this.size,0,2*Math.PI);
+                    ctx.fill();
+                };
+                //定义球类的公共方法，更新球的位置并防止它超出边界
+                Ball.prototype.update=function(){
+                    if((this.x+this.size)>=width||(this.x-this.size)<=0){
+                        this.vX=-(this.vX);
+                    };
+                    if((this.y+this.size)>=height || (this.y-this.size)<=0){
+                        this.vY=-(this.vY);
+                    };
+                    this.x=this.x+this.vX;
+                    this.y=this.y+this.vY;
+                };
+                //定义球类的公共方法，当两个球想碰时，改变其方向和颜色
+                Ball.prototype.pen=function(){
+                    for(let j=0;j<balls.length;j++){
+                        if(!(this===balls[j])){
+                            let dx=this.x-balls[j].x,
+                                dy=this.y-balls[j].y,
+                                sx=Math.sqrt(dx*dx+dy*dy);
+                            if(sx<this.size+balls[j].size){
+                                this.vX=-(this.vX);
+                                this.vY=-(this.vY);
+                                balls[j].vX=-(balls[j].vX);
+                                balls[j].vY=-(balls[j].vY);
+                                this.color='rgb('+random(256)+','+random(256)+','+random(256)+')';
+                            }
+                        }
+                    }
+                }
+                //根据Shape构造函数创建一个圆圈构造函数，继承Shape中定义的属性
+                function EvilCircle(x,y,vX,vY,exists,size,color){
+                    Shape.call(this,x,y,vX,vY,exists);
+                    this.vX=vX;
+                    this.vY=vY;
+                    this.exists=exists;
+                    this.size=size;
+                    this.color=color;
+                }
+                //设置EvilCircle继承Shape的属性
+                EvilCircle.prototype=Object.create(Shape.prototype);
+                ////设置EvilCircle的构造函数为它本身，不然的话为Shape,因为Shape.prototype.constructor===Shape
+                EvilCircle.prototype.constructor=EvilCircle;
+                //定义圆圈的公共方法，画出圆圈
+                EvilCircle.prototype.draw=function(){
+                    ctx.beginPath();
+                    ctx.strokeStyle=this.color;
+                    ctx.arc(this.x,this.y,this.size,0,2*Math.PI);
+                    ctx.stroke();
+                    ctx.lineWidth='3px;'
+                }
+                //定义圆圈的公共方法，防止超出边界
+                EvilCircle.prototype.checkBounds=function(){
+                    if((this.x+this.size)>=width){
+                        this.x-=this.size
+                    };
+                    if((this.x-this.size)<=0){
+                        this.x+=this.size
+                    };
+                    if((this.y+this.size)>=height){
+                        this.y-=this.size
+                    }
+                    if((this.y-this.size)<=0){
+                        this.x+=this.size
+                    }
+                }
+                //定义圆圈的公共方法，控制圆圈
+                EvilCircle.prototype.setControls=function(){
+                    var _this = this;
+                    let down=[false,false,false,false];
+                    document.addEventListener('keydown',function(e){
+                        if (e.keyCode === 65) {
+                            down[0]=true;
+                        }
+                        if (e.keyCode === 68) {
+                            down[1]=true;
+                        }
+                        if (e.keyCode === 87) {
+                            down[2]=true;
+                        }
+                        if (e.keyCode === 83) {
+                            down[3]=true;
+                        }
+                    })
+                    document.addEventListener('keyup',function(e){
+                        if (e.keyCode === 65) {
+                            down[0]=false;
+                        }
+                        if (e.keyCode === 68) {
+                            down[1]=false;
+                        }
+                        if (e.keyCode === 87) {
+                            down[2]=false;
+                        }
+                        if (e.keyCode === 83) {
+                            down[3]=false;
+                        }
+                    })
+                    setInterval(function(){
+                        if(down[0]){
+                            _this.x -= _this.vX;0
+                        };
+                        if(down[1]){
+                            _this.x += _this.vX;
+                        };
+                        if(down[2]){
+                            _this.y -= _this.vY;
+                        };
+                        if(down[3]){
+                            _this.y += _this.vY;
+                        };
+                    },50)
+                }
+                //定义圆圈的公共方法，吃掉球，被吃掉的球的exists属性为false
+                EvilCircle.prototype.collisionDetect=function(){
+                    for(let i=0;i<balls.length;i++){
+                        if(balls[i].exists===true){
+                            let dx=this.x-balls[i].x,
+                            dy=this.y-balls[i].y,
+                            dp=Math.sqrt(dx*dx+dy*dy);
+                            if(this.size>=dp){
+                                balls.splice(i,1);
+                                count--;
+                                Span.innerText=count;
+                                if(evi.size<=50){
+                                    evi.size++;
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+                //球的数组
+                let balls=[];
+                //实例化一个圆圈
+                let evi=new EvilCircle(random(width),random(height),20,20,true,5,'white');
+                //控制圆圈
+                evi.setControls();
+                //定义一个自动刷新的函数
+                function loop(){
+                    //设置一个遮罩，并使球产生尾巴效果
+                    ctx.fillStyle='rgba(0,0,0,0.25)';
+                    ctx.fillRect(0,0,width,height);
+                    //画圆
+                    evi.draw();
+                    //防止圆超出边界
+                    evi.checkBounds();
+                    //圆吃掉球,被吃掉的球的exists属性为false
+                    evi.collisionDetect();
+                    //实例化count个球（count最前面有定义）
+                    while(balls.length<count){
+                        var ball=new Ball(random(width),random(height),random(width/60),random(height/60),true,5,'rgb('+random(256)+','+random(256)+','+random(256)+')');
+                        balls.push(ball);
+                    };
+                    //遍历球的数组
+                    for(let i=0;i<balls.length;i++){
+                        //只有当球的exists属性为true的时候，才会刷新这个球，球被圆圈吃掉了，exists就为false
+                        if(balls[i].exists===true){
+                            balls[i].draw();
+                            balls[i].update();
+                            balls[i].pen();
+                        }
+                    };
+                    //在loop函数结束时，再次调用loop函数
+                    requestAnimationFrame(loop);
+                };
+                //运行loop函数
+                loop();
+        }
+    </script>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <h6>通过W、A、S、D控制小白圈吃掉球可使球消失</h6>
+    <p>Ball Count: <span></span></p>
+</body>
+</html>
